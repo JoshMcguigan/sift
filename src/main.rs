@@ -32,9 +32,10 @@ fn main() {
 
     let mut tty = termion::get_tty().unwrap();
 
-    write!(tty, "{}{}", termion::cursor::Hide, termion::clear::All).unwrap();
+    write!(tty, "{}", termion::cursor::Hide).unwrap();
     let mut selected_option : usize = 0;
 
+    write!(tty, "{}", termion::cursor::Down(input_data.len() as u16)).unwrap(); // update_display expects cursor to be down
     update_display(&tty, &input_data, selected_option);
 
     for c in stdin.keys() {
@@ -55,15 +56,13 @@ fn main() {
 }
 
 fn update_display(mut tty: &File, input_data: &Vec<String>, selected_option: usize) {
+    write!(tty, "{}", termion::cursor::Up(input_data.len() as u16)).unwrap();
     for (index, item) in (&input_data).into_iter().enumerate() {
         let cursor = if selected_option == index {">"} else {" "};
-        write!(tty, "{}{} {} {}",
-               termion::cursor::Goto(0, index as u16 + 1),
+        write!(tty, "{} {} {}\r\n",
                termion::clear::CurrentLine,
                cursor,
                item).unwrap();
     }
-    write!(tty, "\n\r").unwrap();
-
     tty.flush().unwrap();
 }
